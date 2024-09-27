@@ -1,9 +1,12 @@
 import { LoginPageStyled } from "@/features/LoginPage/styled";
 import { KAKAO_AUTH_URL } from "./KakaoAuthUrl";
 const LoginPage = () => {
-  function handleLogin() {
-    window.location.href = KAKAO_AUTH_URL;
-  }
+  const handleLogin = () => {
+    if (typeof window !== "undefined") {
+      // 클라이언트에서만 실행
+      window.location.href = KAKAO_AUTH_URL;
+    }
+  };
 
   return (
     <LoginPageStyled>
