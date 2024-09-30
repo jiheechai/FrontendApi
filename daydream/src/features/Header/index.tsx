@@ -7,6 +7,8 @@ import { Dayjs } from "dayjs";
 import imageLogo from "@/assets/image/imageLogo.jpg";
 import Nav from "./Nav";
 import MNav from "./MNav";
+import LogoutButton from "@/components/Logout/LogoutButton";
+
 const Header = () => {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const showModal = () => {
@@ -98,20 +100,6 @@ const Header = () => {
       },
     });
     setIsMoved(false);
-  };
-
-  // 상태 초기화 핸들러
-  const resetStates = () => {
-    setPlace("");
-    setAutoComplete([]);
-    setDates([null, null]);
-    setCheckInDate(null);
-    setCheckOutDate(null);
-    setPeopleNum(1);
-    setAdultCount(1);
-    setChildCount(0);
-    setInfantCount(0);
-    setPetCount(0);
   };
 
   // 모바일 navbar 핸들러

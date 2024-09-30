@@ -2,14 +2,12 @@ import { AuthCallbackStyledComponent } from "./styled";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import axios from "axios";
-interface UserData {
-  nickname: string;
-  profile_image_url: string;
-}
+import LogoutButton from "@/components/Logout/LogoutButton";
 
 const AuthCallback = () => {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchKakaoToken = async () => {
@@ -17,25 +15,42 @@ const AuthCallback = () => {
 
       if (code) {
         try {
+          // 카카오로부터 토큰을 받는 요청
           const response = await axios.post(
             "http://localhost:5000/api/auth/kakao/callback",
-            {
-              code: code,
-            }
+
+            { code: code },
+            { withCredentials: true } // 요청에 쿠키 포함
           );
 
           console.log(response.data.user);
-
-          // 카카오 로그인 성공 후, 사용자 정보 저장
-          const { nickname, profile_image_url } =
-            response.data.user.kakao_account.profile;
-
-          setUserData({
-            nickname: nickname,
-            profile_image_url: profile_image_url,
-          });
-
           console.log("로그인 성공:", response.data);
+          // 카카오 로그인 성공 후, 사용자 정보 저장
+          // const { nickname, profile_image_url } =
+          //   response.data.user.kakao_account.profile;
+
+          // setUserData({
+          //   nickname: nickname,
+          //   profile_image_url: profile_image_url,
+          // });
+          // 로그인 성공 후, 세션 정보를 가져옴
+          const sessionResponse = await fetch(
+            "http://localhost:5000/auth/session",
+            {
+              method: "GET",
+              credentials: "include", // 쿠키 포함
+            }
+          );
+
+          const data = await sessionResponse.json();
+
+          if (data.loggedIn) {
+            setIsLoggedIn(true);
+            setUser(data.user); // 세션에 저장된 사용자 정보
+          } else {
+            setIsLoggedIn(false);
+          }
+          console.log("세션 로그인 상태 확인 성공:", data);
         } catch (error) {
           console.error("카카오 로그인 실패:", error);
         }
@@ -48,13 +63,14 @@ const AuthCallback = () => {
   return (
     <AuthCallbackStyledComponent>
       <div>
-        {userData ? (
+        {isLoggedIn ? (
           <div>
-            <h1>Welcome, {userData.nickname}!</h1>
-            <img src={userData.profile_image_url} alt="Profile" />
+            <h2>로그인 상태</h2>
+            <p>환영합니다, {user?.properties.nickname}님!</p>
+            <LogoutButton />
           </div>
         ) : (
-          <p>로그인 중...</p>
+          <p>로그인되지 않았습니다.</p>
         )}
       </div>
     </AuthCallbackStyledComponent>
@@ -62,38 +78,3 @@ const AuthCallback = () => {
 };
 
 export default AuthCallback;
-
-// import { AuthCallbackStyledComponent } from "./styled";
-// import { useEffect } from "react";
-
-// const AuthCallback = () => {
-//   // const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const code = new URL(window.location.href).searchParams.get("code");
-//     console.log(code);
-//     const headers = {
-//       "Content-Type": "application/x-www-form-urlencoded",
-//     };
-
-//     // fetch(`보내줄 주소?code=${code}`, {
-//     //   method: "POST",
-//     //   headers: headers,
-//     // })
-//     //   .then((response) => response.json())
-//     //   .then((data) => {
-//     //     console.log(data);
-//     //     console.log(data.result.user_id);
-//     //     console.log(data.result.jwt);
-//     //   })
-//     //   .catch((error) => {
-//     //     console.error("오류 발생", error);
-//     //   });
-//   }, []);
-//   return (
-//     <AuthCallbackStyledComponent>
-//       <h1>카카오 로그인이 완료되면 보이는 화면입니다.</h1>
-//     </AuthCallbackStyledComponent>
-//   );
-// };
-// export default AuthCallback;
